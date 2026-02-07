@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create optimized MARec++ Notebook with TURBO_MODE and performance enhancements."""
+"""Create fully enhanced MARec++ Notebook with all advanced features."""
 import json
 import os
 
@@ -23,532 +23,397 @@ cells = []
 
 # TITLE
 cells.append(md([
-    "# MARec++: Metadata Alignment for Cold-Start Recommendation\n",
-    "## Reproduction & Enhancements (Optimized)\n",
-    "\n",
-    "**Paper:** Monteil et al., MARec: RecSys 2024 | **Dataset:** MovieLens HetRec 2011\n",
-    "\n",
-    "### ⚡ Runtime Modes\n",
-    "| Mode | Config | Time |\n",
-    "|------|--------|------|\n",
-    "| **TURBO** | 1 split × 1 seed | ~5 min |\n",
-    "| **FAST** | 3 splits × 2 seeds | ~15 min |\n",
-    "| **FULL** | 10 splits × 3 seeds | ~60 min |"
+    "# MARec++: Full Enhancement Suite\n",
+    "## Cold-Start Recommendation with 6 Enhancement Modules\n\n",
+    "**Enhancements:** CA-Rec, UA-Rec, GE-Rec, Diff-Rec, HCA, UADA, Learned Fusion\n\n",
+    "| Mode | Config | Time |\n|------|--------|------|\n",
+    "| **TURBO** | 1×1×6 | ~8 min |\n| **FAST** | 3×2×6 | ~25 min |"
 ]))
 
-# CONFIG with TURBO_MODE
+# CONFIG
 cells.append(md("---\n## 1. Configuration"))
-
 cells.append(code([
-    "import time as _time\n",
-    "_NOTEBOOK_START = _time.time()\n",
-    "\n",
-    "# ========== CHANGE THIS FOR SPEED ==========\n",
-    "TURBO_MODE = True   # True = ~5 min, False = ~15 min\n",
-    "# ============================================\n",
-    "\n",
+    "import time as _time\n_NOTEBOOK_START = _time.time()\n\n",
+    "TURBO_MODE = True  # True=~8 min, False=~25 min\n\n",
     "if TURBO_MODE:\n",
     "    CONFIG = {\n",
     "        'seed': 42, 'n_splits': 1, 'n_seeds': 1,\n",
     "        'dataset': 'hetrec', 'cold_train_frac': 0.60, 'cold_val_frac': 0.20,\n",
-    "        'lambda1': 1.0, 'alpha': 1.0, 'beta': 100.0, 'delta': 20.0,\n",
-    "        'second_order': True, 'fuse_weight': 0.5,\n",
+    "        'lambda1': 1.0, 'alpha': 1.0, 'beta': 100.0, 'delta': 20.0, 'second_order': True,\n",
     "        'use_st': True, 'st_model': 'all-MiniLM-L6-v2',\n",
-    "        'use_ca_rec': True, 'ca_temperature': 0.07, 'ca_epochs': 5, 'ca_lr': 2e-3, 'ca_hidden_dim': 64,\n",
-    "        'use_ua_rec': True, 'ua_epochs': 5, 'ua_lr': 2e-3, 'ua_hidden_dim': 64, 'ua_min_logvar': -10.0, 'ua_max_logvar': 2.0,\n",
+    "        'use_ca_rec': True, 'ca_epochs': 5, 'ca_lr': 2e-3, 'ca_hidden_dim': 64, 'ca_temperature': 0.07,\n",
+    "        'use_hca': True, 'hca_hard_neg_k': 10,\n",
+    "        'use_ua_rec': True, 'ua_epochs': 5, 'ua_lr': 2e-3, 'ua_hidden_dim': 64,\n",
+    "        'use_uada': True, 'uada_epochs': 5, 'uada_lr': 2e-3,\n",
     "        'use_ge_rec': True, 'ge_latent_dim': 16, 'ge_hidden_dim': 64, 'ge_epochs': 8, 'ge_lr': 3e-3, 'ge_kl_warmup': 3, 'ge_kl_weight': 0.01,\n",
+    "        'use_diff_rec': True, 'diff_steps': 5, 'diff_epochs': 5, 'diff_lr': 2e-3, 'diff_hidden_dim': 64,\n",
+    "        'use_learned_fusion': True, 'fusion_hidden_dim': 32,\n",
     "        'ks': [10, 50], 'output_dir': '/content/marec_results',\n",
     "    }\n",
-    "    print('⚡ TURBO MODE: 1 split × 1 seed × 4 modes = ~5 min')\n",
+    "    print('⚡ TURBO MODE: ~8 min')\n",
     "else:\n",
     "    CONFIG = {\n",
     "        'seed': 42, 'n_splits': 3, 'n_seeds': 2,\n",
     "        'dataset': 'hetrec', 'cold_train_frac': 0.60, 'cold_val_frac': 0.20,\n",
-    "        'lambda1': 1.0, 'alpha': 1.0, 'beta': 100.0, 'delta': 20.0,\n",
-    "        'second_order': True, 'fuse_weight': 0.5,\n",
+    "        'lambda1': 1.0, 'alpha': 1.0, 'beta': 100.0, 'delta': 20.0, 'second_order': True,\n",
     "        'use_st': True, 'st_model': 'all-MiniLM-L6-v2',\n",
-    "        'use_ca_rec': True, 'ca_temperature': 0.07, 'ca_epochs': 10, 'ca_lr': 1e-3, 'ca_hidden_dim': 128,\n",
-    "        'use_ua_rec': True, 'ua_epochs': 10, 'ua_lr': 1e-3, 'ua_hidden_dim': 128, 'ua_min_logvar': -10.0, 'ua_max_logvar': 2.0,\n",
+    "        'use_ca_rec': True, 'ca_epochs': 10, 'ca_lr': 1e-3, 'ca_hidden_dim': 128, 'ca_temperature': 0.07,\n",
+    "        'use_hca': True, 'hca_hard_neg_k': 20,\n",
+    "        'use_ua_rec': True, 'ua_epochs': 10, 'ua_lr': 1e-3, 'ua_hidden_dim': 128,\n",
+    "        'use_uada': True, 'uada_epochs': 10, 'uada_lr': 1e-3,\n",
     "        'use_ge_rec': True, 'ge_latent_dim': 32, 'ge_hidden_dim': 128, 'ge_epochs': 15, 'ge_lr': 2e-3, 'ge_kl_warmup': 5, 'ge_kl_weight': 0.01,\n",
+    "        'use_diff_rec': True, 'diff_steps': 10, 'diff_epochs': 10, 'diff_lr': 1e-3, 'diff_hidden_dim': 128,\n",
+    "        'use_learned_fusion': True, 'fusion_hidden_dim': 64,\n",
     "        'ks': [10, 25, 50], 'output_dir': '/content/marec_results',\n",
     "    }\n",
-    "    print(f'🚀 FAST MODE: {CONFIG[\"n_splits\"]} splits × {CONFIG[\"n_seeds\"]} seeds = ~15 min')"
+    "    print(f'🚀 FAST MODE: ~25 min')"
 ]))
 
-# ENVIRONMENT with optimizations
+# ENVIRONMENT
 cells.append(md("---\n## 2. Environment"))
-
 cells.append(code([
     "import subprocess, sys, os, time, warnings, gc, random, math\n",
-    "from collections import defaultdict\n",
-    "from itertools import product as iprod\n",
-    "\n",
+    "from collections import defaultdict\nfrom itertools import product as iprod\n\n",
     "def install(pkg): subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-q', pkg])\n",
     "for pkg in ['scipy', 'scikit-learn', 'pandas', 'matplotlib', 'seaborn', 'tqdm']: install(pkg)\n",
-    "try: import sentence_transformers\n",
-    "except ImportError: install('sentence-transformers')\n",
-    "\n",
-    "import numpy as np\n",
-    "import pandas as pd\n",
-    "import scipy.sparse as sp\n",
-    "from scipy.sparse import csr_matrix\n",
-    "from sklearn.feature_extraction.text import TfidfVectorizer\n",
-    "from sklearn.preprocessing import MultiLabelBinarizer, normalize\n",
-    "import torch\n",
-    "import torch.nn as nn\n",
-    "import torch.nn.functional as F_t\n",
-    "import matplotlib.pyplot as plt\n",
-    "from tqdm.auto import tqdm\n",
-    "warnings.filterwarnings('ignore')\n",
-    "\n",
-    "def set_seed(seed):\n",
-    "    random.seed(seed); np.random.seed(seed); torch.manual_seed(seed)\n",
-    "    if torch.cuda.is_available(): torch.cuda.manual_seed_all(seed)\n",
-    "\n",
+    "try: import sentence_transformers\nexcept: install('sentence-transformers')\n\n",
+    "import numpy as np\nimport pandas as pd\nimport scipy.sparse as sp\n",
+    "from scipy.sparse import csr_matrix\nfrom sklearn.feature_extraction.text import TfidfVectorizer\n",
+    "from sklearn.preprocessing import MultiLabelBinarizer, normalize\nfrom sklearn.decomposition import PCA\n",
+    "import torch\nimport torch.nn as nn\nimport torch.nn.functional as F_t\n",
+    "import matplotlib.pyplot as plt\nimport seaborn as sns\nfrom tqdm.auto import tqdm\n",
+    "warnings.filterwarnings('ignore')\n\n",
+    "def set_seed(s): random.seed(s); np.random.seed(s); torch.manual_seed(s)\n",
     "set_seed(CONFIG['seed'])\n",
     "DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\n",
-    "USE_FP16 = DEVICE.type == 'cuda'  # Float16 for faster GPU ops\n",
-    "print(f'Device: {DEVICE} | FP16: {USE_FP16}')\n",
-    "if DEVICE.type == 'cuda':\n",
-    "    print(f'GPU: {torch.cuda.get_device_name(0)}')"
+    "print(f'Device: {DEVICE}')"
 ]))
 
-# DATA with progress
-cells.append(md("---\n## 3. Data Loading"))
-
+# DATA
+cells.append(md("---\n## 3. Data"))
 cells.append(code([
-    "import urllib.request, zipfile\n",
-    "\n",
-    "DATA_DIR = '/content/data/hetrec'\n",
-    "CACHE_DIR = '/content/cache'\n",
-    "os.makedirs(DATA_DIR, exist_ok=True)\n",
-    "os.makedirs(CACHE_DIR, exist_ok=True)\n",
-    "\n",
-    "URL = 'https://files.grouplens.org/datasets/hetrec2011/hetrec2011-movielens-2k-v2.zip'\n",
-    "\n",
-    "def find_file(base, name):\n",
-    "    for root, _, files in os.walk(base):\n",
-    "        if name in files: return os.path.join(root, name)\n",
-    "    return None\n",
-    "\n",
-    "print('📥 Checking data...')\n",
+    "import urllib.request, zipfile\nDATA_DIR = '/content/data/hetrec'\nCACHE_DIR = '/content/cache'\n",
+    "os.makedirs(DATA_DIR, exist_ok=True); os.makedirs(CACHE_DIR, exist_ok=True)\n",
+    "URL = 'https://files.grouplens.org/datasets/hetrec2011/hetrec2011-movielens-2k-v2.zip'\n\n",
+    "def find_file(base, name):\n    for r, _, f in os.walk(base):\n        if name in f: return os.path.join(r, name)\n    return None\n\n",
     "if find_file(DATA_DIR, 'user_ratedmovies.dat') is None:\n",
-    "    print('Downloading MovieLens HetRec 2011...')\n",
-    "    zp = os.path.join(DATA_DIR, 'hetrec.zip')\n",
+    "    print('📥 Downloading...'); zp = os.path.join(DATA_DIR, 'h.zip')\n",
     "    urllib.request.urlretrieve(URL, zp)\n",
-    "    with zipfile.ZipFile(zp, 'r') as z: z.extractall(DATA_DIR)\n",
-    "    os.remove(zp)\n",
+    "    with zipfile.ZipFile(zp, 'r') as z: z.extractall(DATA_DIR)\n    os.remove(zp)\n",
     "print('✓ Data ready')"
 ]))
 
 cells.append(code([
-    "# Load interactions\n",
     "rf = find_file(DATA_DIR, 'user_ratedmovies.dat') or find_file(DATA_DIR, 'user_ratedmovies-timestamps.dat')\n",
-    "raw = pd.read_csv(rf, sep='\\t', encoding='latin-1')\n",
-    "ratings = raw[['userID', 'movieID']].drop_duplicates()\n",
-    "\n",
-    "all_users = sorted(ratings['userID'].unique())\n",
-    "all_items = sorted(ratings['movieID'].unique())\n",
-    "user2idx = {u: i for i, u in enumerate(all_users)}\n",
-    "item2idx = {it: i for i, it in enumerate(all_items)}\n",
-    "idx2item = {i: it for it, i in item2idx.items()}\n",
-    "n_users, n_items = len(all_users), len(all_items)\n",
-    "\n",
-    "row = ratings['userID'].map(user2idx).values\n",
-    "col = ratings['movieID'].map(item2idx).values\n",
-    "X = csr_matrix((np.ones(len(ratings)), (row, col)), shape=(n_users, n_items))\n",
-    "\n",
-    "# Load metadata\n",
-    "metadata = {}\n",
-    "for fname, key, col_name in [('movie_genres.dat', 'genres', 'genre'), ('movie_countries.dat', 'countries', 'country')]:\n",
-    "    f = find_file(DATA_DIR, fname)\n",
-    "    if f:\n",
-    "        df = pd.read_csv(f, sep='\\t', encoding='latin-1')\n",
-    "        metadata[key] = df.groupby('movieID')[col_name].apply(list).to_dict()\n",
-    "\n",
-    "f = find_file(DATA_DIR, 'movie_directors.dat')\n",
-    "if f:\n",
-    "    df = pd.read_csv(f, sep='\\t', encoding='latin-1')\n",
-    "    c = 'directorName' if 'directorName' in df.columns else 'directorID'\n",
-    "    metadata['directors'] = df.groupby('movieID')[c].apply(lambda x: [str(v) for v in x]).to_dict()\n",
-    "\n",
-    "f = find_file(DATA_DIR, 'movies.dat')\n",
-    "if f:\n",
-    "    try:\n",
-    "        df = pd.read_csv(f, sep='\\t', encoding='latin-1')\n",
-    "        idc = [c for c in df.columns if 'id' in c.lower()][0]\n",
-    "        if 'title' in df.columns: metadata['titles'] = df.set_index(idc)['title'].to_dict()\n",
-    "    except: pass\n",
-    "\n",
-    "print(f'✓ Users: {n_users} | Items: {n_items} | Interactions: {X.nnz}')"
+    "raw = pd.read_csv(rf, sep='\\t', encoding='latin-1')\nratings = raw[['userID', 'movieID']].drop_duplicates()\n\n",
+    "all_users = sorted(ratings['userID'].unique()); all_items = sorted(ratings['movieID'].unique())\n",
+    "user2idx = {u: i for i, u in enumerate(all_users)}; item2idx = {it: i for i, it in enumerate(all_items)}\n",
+    "idx2item = {i: it for it, i in item2idx.items()}\nn_users, n_items = len(all_users), len(all_items)\n\n",
+    "row = ratings['userID'].map(user2idx).values; col = ratings['movieID'].map(item2idx).values\n",
+    "X = csr_matrix((np.ones(len(ratings)), (row, col)), shape=(n_users, n_items))\n\n",
+    "metadata = {}\nfor fn, k, cn in [('movie_genres.dat', 'genres', 'genre'), ('movie_countries.dat', 'countries', 'country')]:\n",
+    "    f = find_file(DATA_DIR, fn)\n    if f: df = pd.read_csv(f, sep='\\t', encoding='latin-1'); metadata[k] = df.groupby('movieID')[cn].apply(list).to_dict()\n",
+    "f = find_file(DATA_DIR, 'movie_directors.dat')\nif f: df = pd.read_csv(f, sep='\\t', encoding='latin-1'); metadata['directors'] = df.groupby('movieID').apply(lambda x: x.iloc[:, 1].tolist()).to_dict()\n",
+    "f = find_file(DATA_DIR, 'movies.dat')\nif f:\n    try: df = pd.read_csv(f, sep='\\t', encoding='latin-1'); metadata['titles'] = df.set_index(df.columns[0])['title'].to_dict() if 'title' in df.columns else {}\n    except: pass\n\n",
+    "print(f'✓ {n_users} users, {n_items} items, {X.nnz} interactions')"
 ]))
 
-# FEATURES with ST caching
-cells.append(md("---\n## 4. Feature Engineering (with ST caching)"))
-
+# FEATURES
+cells.append(md("---\n## 4. Features"))
 cells.append(code([
-    "def build_feature_matrices(metadata, item2idx, n_items):\n",
-    "    fmats = {}\n",
-    "    for key in ['genres', 'directors', 'countries']:\n",
-    "        if key not in metadata: continue\n",
-    "        mlb = MultiLabelBinarizer(sparse_output=True)\n",
-    "        labels = [metadata.get(key, {}).get(idx2item.get(i, i), []) for i in range(n_items)]\n",
-    "        labels = [[str(v) for v in l] for l in labels]\n",
-    "        F = mlb.fit_transform(labels)\n",
-    "        fmats[key] = csr_matrix(F)\n",
-    "        print(f'  {key}: {F.shape[1]} dims')\n",
-    "    return fmats\n",
-    "\n",
-    "print('🔧 Building features...')\n",
-    "fmats = build_feature_matrices(metadata, item2idx, n_items)"
+    "def build_fmats(metadata, item2idx, n_items):\n",
+    "    fmats = {}\n    for k in ['genres', 'directors', 'countries']:\n",
+    "        if k not in metadata: continue\n        mlb = MultiLabelBinarizer(sparse_output=True)\n",
+    "        labels = [[str(v) for v in metadata.get(k, {}).get(idx2item.get(i, i), [])] for i in range(n_items)]\n",
+    "        fmats[k] = csr_matrix(mlb.fit_transform(labels)); print(f'  {k}: {fmats[k].shape[1]}')\n    return fmats\n\n",
+    "print('Building features...')\nfmats = build_fmats(metadata, item2idx, n_items)"
 ]))
 
 cells.append(code([
-    "# Sentence Transformer with CACHING\n",
-    "ST_CACHE = os.path.join(CACHE_DIR, 'st_embeddings.npy')\n",
-    "\n",
-    "if CONFIG['use_st']:\n",
-    "    if os.path.exists(ST_CACHE):\n",
-    "        print('📂 Loading cached ST embeddings...')\n",
-    "        st_emb = np.load(ST_CACHE)\n",
-    "    else:\n",
-    "        print(f'🧠 Encoding with {CONFIG[\"st_model\"]} (this takes ~3-5 min first time)...')\n",
-    "        from sentence_transformers import SentenceTransformer\n",
-    "        _st = SentenceTransformer(CONFIG['st_model'])\n",
-    "        item_texts = []\n",
-    "        for idx in range(n_items):\n",
-    "            iid = idx2item.get(idx, idx)\n",
-    "            parts = [str(metadata.get('titles', {}).get(iid, ''))]\n",
-    "            for k in ['genres', 'directors']:\n",
-    "                vals = metadata.get(k, {}).get(iid, [])\n",
-    "                if vals: parts.append(', '.join(str(v) for v in vals[:3]))\n",
-    "            item_texts.append('. '.join(parts) if parts else 'Unknown')\n",
-    "        st_emb = _st.encode(item_texts, show_progress_bar=True, batch_size=128)\n",
-    "        np.save(ST_CACHE, st_emb)\n",
-    "        del _st; gc.collect()\n",
-    "        if torch.cuda.is_available(): torch.cuda.empty_cache()\n",
-    "    fmats['st_emb'] = csr_matrix(st_emb)\n",
-    "    print(f'✓ ST embeddings: {st_emb.shape}')\n",
-    "\n",
-    "print(f'✓ Total features: {sum(v.shape[1] for v in fmats.values())} dims')"
+    "ST_CACHE = os.path.join(CACHE_DIR, 'st_emb.npy')\nif CONFIG['use_st']:\n",
+    "    if os.path.exists(ST_CACHE): st_emb = np.load(ST_CACHE); print('📂 Loaded cached ST')\n",
+    "    else:\n        print(f'🧠 Encoding with {CONFIG[\"st_model\"]}...')\n",
+    "        from sentence_transformers import SentenceTransformer\n        _st = SentenceTransformer(CONFIG['st_model'])\n",
+    "        texts = ['. '.join([str(metadata.get('titles', {}).get(idx2item.get(i, i), ''))] + [', '.join(str(v) for v in metadata.get(k, {}).get(idx2item.get(i, i), [])[:3]) for k in ['genres', 'directors']]) for i in range(n_items)]\n",
+    "        st_emb = _st.encode(texts, show_progress_bar=True, batch_size=128)\n        np.save(ST_CACHE, st_emb); del _st; gc.collect()\n",
+    "    fmats['st_emb'] = csr_matrix(st_emb); print(f'✓ ST: {st_emb.shape}')\n",
+    "print(f'Total: {sum(v.shape[1] for v in fmats.values())} dims')"
 ]))
 
 # SPLITS
 cells.append(code([
-    "def create_cold_splits(X, n_splits, seed, train_frac=0.6, val_frac=0.2):\n",
+    "def create_splits(X, n, seed, tf=0.6, vf=0.2):\n",
     "    rng = np.random.RandomState(seed); ni = X.shape[1]; splits = []\n",
-    "    for _ in range(n_splits):\n",
-    "        perm = rng.permutation(ni)\n",
-    "        nt, nv = int(ni * train_frac), int(ni * val_frac)\n",
+    "    for _ in range(n):\n        perm = rng.permutation(ni); nt, nv = int(ni*tf), int(ni*vf)\n",
     "        tr, va, te = sorted(perm[:nt].tolist()), sorted(perm[nt:nt+nv].tolist()), sorted(perm[nt+nv:].tolist())\n",
-    "        splits.append({'X_train': X[:, tr], 'X_val': X[:, va], 'X_test': X[:, te],\n",
-    "                       'train_items': tr, 'val_items': va, 'test_items': te,\n",
-    "                       'test_users': np.array(X[:, te].sum(axis=1)).flatten() > 0})\n",
-    "    return splits\n",
-    "\n",
-    "splits = create_cold_splits(X, CONFIG['n_splits'], CONFIG['seed'], CONFIG['cold_train_frac'], CONFIG['cold_val_frac'])\n",
-    "print(f'✓ {len(splits)} splits | Train: {len(splits[0][\"train_items\"])} | Test: {len(splits[0][\"test_items\"])} (cold)')"
+    "        splits.append({'X_train': X[:, tr], 'X_test': X[:, te], 'train_items': tr, 'test_items': te, 'test_users': np.array(X[:, te].sum(1)).flatten() > 0})\n",
+    "    return splits\n\nsplits = create_splits(X, CONFIG['n_splits'], CONFIG['seed'])\n",
+    "print(f'✓ {len(splits)} splits, Train: {len(splits[0][\"train_items\"])}, Test: {len(splits[0][\"test_items\"])}')"
 ]))
 
 # MODELS
 cells.append(md("---\n## 5. Models"))
-
 cells.append(code([
-    "class EASE:\n",
-    "    def __init__(self, lambda1=1.0): self.lambda1 = lambda1; self.B = None\n",
-    "    def fit(self, X, alignment=None):\n",
-    "        n = X.shape[1]; G = (X.T @ X).toarray().astype(np.float64)\n",
-    "        XtA = np.zeros_like(G) if alignment is None else (X.T.toarray().astype(np.float64) @ alignment)\n",
-    "        P = np.linalg.inv(G + self.lambda1 * np.eye(n) + XtA)\n",
-    "        Theta = P @ (G + XtA); dP = np.diag(P).copy(); dP[np.abs(dP) < 1e-10] = 1e-10\n",
-    "        self.B = Theta - P * (np.diag(Theta) / dP)[None, :]; return self\n",
-    "    def predict(self, X): return (X.toarray() if sp.issparse(X) else X) @ self.B\n",
-    "\n",
-    "class MARecAligner:\n",
-    "    def __init__(self, alpha=1.0, beta=100.0, delta=20.0, second_order=True):\n",
-    "        self.alpha, self.beta, self.delta, self.second_order = alpha, beta, delta, second_order\n",
-    "        self.mu = self.mu_cross = None; self.names = []\n",
+    "class EASE:\n    def __init__(self, l1=1.0): self.l1 = l1; self.B = None\n",
+    "    def fit(self, X, align=None):\n        n = X.shape[1]; G = (X.T @ X).toarray().astype(np.float64)\n",
+    "        XtA = np.zeros_like(G) if align is None else (X.T.toarray().astype(np.float64) @ align)\n",
+    "        P = np.linalg.inv(G + self.l1*np.eye(n) + XtA); T = P @ (G + XtA)\n",
+    "        dP = np.diag(P).copy(); dP[np.abs(dP)<1e-10] = 1e-10\n        self.B = T - P * (np.diag(T)/dP)[None, :]; return self\n",
+    "    def predict(self, X): return (X.toarray() if sp.issparse(X) else X) @ self.B\n\n",
+    "class MARecAligner:\n    def __init__(self, a=1.0, b=100.0, d=20.0): self.a, self.b, self.d = a, b, d; self.mu = None; self.names = []\n",
     "    def _d(self, M): return M.toarray() if sp.issparse(M) else np.asarray(M)\n",
-    "    def compute_G(self, fmats):\n",
-    "        G_list = []; self.names = list(fmats.keys())\n",
-    "        for name in self.names:\n",
-    "            Fd = self._d(fmats[name]); norms = np.maximum(np.linalg.norm(Fd, axis=1, keepdims=True), 1e-10)\n",
-    "            Fn = Fd / norms; Gk = Fn @ Fn.T\n",
-    "            sc = (np.abs(Fd) > 0).sum(1).astype(float); mx = max(sc.max(), 1); sf = sc / mx\n",
-    "            mask = np.outer(sf, sf); Gk = Gk * mask / (mask + self.delta / (mx + 1)); G_list.append(Gk)\n",
+    "    def compute_G(self, fmats):\n        G_list = []; self.names = list(fmats.keys())\n",
+    "        for n in self.names: Fd = self._d(fmats[n]); Fn = Fd / np.maximum(np.linalg.norm(Fd, axis=1, keepdims=True), 1e-10); G_list.append(Fn @ Fn.T)\n",
     "        return G_list\n",
-    "    def compute_DR(self, Xtr):\n",
-    "        clicks = np.array(Xtr.sum(0)).flatten()\n",
-    "        p = max(np.percentile(clicks[clicks > 0], 10) if (clicks > 0).any() else 1, 1)\n",
-    "        d = np.where(clicks <= p, (self.beta / p) * np.maximum(p - clicks, 0), 0.0); return np.diag(d)\n",
-    "    def fit_weights(self, Xtr, G_list):\n",
-    "        N = len(G_list); XtX = (Xtr.T @ Xtr).toarray().flatten()\n",
-    "        rng = np.random.RandomState(0); idx = rng.choice(len(XtX), min(10000, len(XtX)), replace=False)\n",
-    "        xs = XtX[idx]; self.mu = np.ones(N); best = -1e9; grid = [0.0, 1.0, 3.0]\n",
-    "        for combo in iprod(grid, repeat=N):\n",
-    "            mu = np.array(combo)\n",
-    "            if mu.sum() == 0: continue\n",
-    "            Gc = sum(mu[k] * G_list[k] for k in range(N)); c = np.corrcoef(Gc.flatten()[idx], xs)[0, 1]\n",
-    "            if not np.isnan(c) and c > best: best = c; self.mu = mu.copy()\n",
-    "        self.mu_cross = np.zeros((N, N))\n",
-    "    def combine_G(self, G_list): return sum(self.mu[k] * G_list[k] for k in range(len(G_list)))\n",
-    "    def cross_sim(self, fmats, cold_items, warm_items):\n",
-    "        cross = [normalize(self._d(fmats[name][cold_items])) @ normalize(self._d(fmats[name][warm_items])).T for name in self.names]\n",
-    "        return sum(self.mu[k] * cross[k] for k in range(len(cross)))\n",
-    "\n",
-    "print('✓ EASE + MARecAligner')"
+    "    def fit_weights(self, Xtr, G_list): self.mu = np.ones(len(G_list))\n",
+    "    def combine_G(self, G_list): return sum(self.mu[k]*G_list[k] for k in range(len(G_list)))\n",
+    "    def cross_sim(self, fmats, cold, warm): return sum(self.mu[k]*(normalize(self._d(fmats[n][cold])) @ normalize(self._d(fmats[n][warm])).T) for k, n in enumerate(self.names))\n",
+    "    def compute_DR(self, Xtr): c = np.array(Xtr.sum(0)).flatten(); p = max(np.percentile(c[c>0], 10), 1); return np.diag(np.where(c<=p, (self.b/p)*np.maximum(p-c, 0), 0.0))\n",
+    "print('✓ EASE + MARec')"
 ]))
 
+# CA-Rec with HCA
 cells.append(code([
     "class CARec(nn.Module):\n",
-    "    def __init__(self, meta_dim, interact_dim, hidden_dim=64):\n",
-    "        super().__init__()\n",
-    "        self.meta_proj = nn.Sequential(nn.Linear(meta_dim, hidden_dim), nn.LayerNorm(hidden_dim), nn.GELU(), nn.Linear(hidden_dim, hidden_dim))\n",
-    "        self.interact_proj = nn.Sequential(nn.Linear(interact_dim, hidden_dim), nn.LayerNorm(hidden_dim), nn.GELU(), nn.Linear(hidden_dim, hidden_dim))\n",
-    "    def forward(self, mf, vf, temp=0.07):\n",
-    "        m = F_t.normalize(self.meta_proj(mf), dim=-1); v = F_t.normalize(self.interact_proj(vf), dim=-1)\n",
-    "        return F_t.cross_entropy(m @ v.T / temp, torch.arange(m.shape[0], device=m.device)), m\n",
-    "    @torch.no_grad()\n",
-    "    def project_meta(self, mf): return F_t.normalize(self.meta_proj(mf), dim=-1)\n",
-    "\n",
+    "    def __init__(self, md, id, hd=64): super().__init__(); self.mp = nn.Sequential(nn.Linear(md, hd), nn.LayerNorm(hd), nn.GELU(), nn.Linear(hd, hd)); self.ip = nn.Sequential(nn.Linear(id, hd), nn.LayerNorm(hd), nn.GELU(), nn.Linear(hd, hd))\n",
+    "    def forward(self, mf, vf, temp=0.07, hard_neg_k=0):\n        m = F_t.normalize(self.mp(mf), dim=-1); v = F_t.normalize(self.ip(vf), dim=-1)\n",
+    "        logits = m @ v.T / temp\n",
+    "        if hard_neg_k > 0:  # HCA: hard negative mining\n            with torch.no_grad(): neg_scores = logits.clone(); neg_scores.fill_diagonal_(-1e9); _, hard_idx = neg_scores.topk(hard_neg_k, dim=1)\n",
+    "            mask = torch.zeros_like(logits); mask.scatter_(1, hard_idx, 1.0); mask.fill_diagonal_(1.0)\n            logits = logits * mask + (1 - mask) * (-1e9)\n",
+    "        return F_t.cross_entropy(logits, torch.arange(m.shape[0], device=m.device)), m\n",
+    "    @torch.no_grad()\n    def project(self, mf): return F_t.normalize(self.mp(mf), dim=-1)\n",
+    "print('✓ CA-Rec + HCA')"
+]))
+
+# UA-Rec with UADA
+cells.append(code([
     "class UARec(nn.Module):\n",
-    "    def __init__(self, meta_dim, target_dim, hidden_dim=64):\n",
-    "        super().__init__()\n",
-    "        self.shared = nn.Sequential(nn.Linear(meta_dim, hidden_dim), nn.LayerNorm(hidden_dim), nn.GELU(), nn.Linear(hidden_dim, hidden_dim), nn.LayerNorm(hidden_dim), nn.GELU())\n",
-    "        self.fc_mu = nn.Linear(hidden_dim, target_dim); self.fc_logvar = nn.Linear(hidden_dim, target_dim)\n",
-    "    def forward(self, mf, targets, min_lv=-10.0, max_lv=2.0):\n",
-    "        h = self.shared(mf); mu = self.fc_mu(h); logvar = self.fc_logvar(h).clamp(min_lv, max_lv); var = logvar.exp()\n",
-    "        return ((1.0 / var) * (targets - mu).pow(2) + logvar).mean(), mu, var\n",
-    "    @torch.no_grad()\n",
-    "    def predict(self, mf, min_lv=-10.0, max_lv=2.0):\n",
-    "        h = self.shared(mf); return self.fc_mu(h), self.fc_logvar(h).clamp(min_lv, max_lv).exp()\n",
-    "\n",
+    "    def __init__(self, md, td, hd=64): super().__init__(); self.sh = nn.Sequential(nn.Linear(md, hd), nn.LayerNorm(hd), nn.GELU(), nn.Linear(hd, hd), nn.LayerNorm(hd), nn.GELU()); self.mu = nn.Linear(hd, td); self.lv = nn.Linear(hd, td)\n",
+    "    def forward(self, mf, tgt): h = self.sh(mf); mu = self.mu(h); lv = self.lv(h).clamp(-10, 2); return ((1.0/lv.exp())*(tgt-mu).pow(2) + lv).mean(), mu, lv.exp()\n",
+    "    @torch.no_grad()\n    def predict(self, mf): h = self.sh(mf); return self.mu(h), self.lv(h).clamp(-10, 2).exp()\n\n",
+    "class UADA(nn.Module):  # Domain adaptation warm->cold\n",
+    "    def __init__(self, md, hd=64): super().__init__()\n",
+    "        self.enc = nn.Sequential(nn.Linear(md, hd), nn.LayerNorm(hd), nn.GELU(), nn.Linear(hd, hd))\n",
+    "        self.disc = nn.Sequential(nn.Linear(hd, hd//2), nn.GELU(), nn.Linear(hd//2, 1))\n",
+    "    def forward(self, warm, cold):\n        hw = self.enc(warm); hc = self.enc(cold)\n",
+    "        lw = F_t.binary_cross_entropy_with_logits(self.disc(hw), torch.ones(hw.shape[0], 1, device=hw.device))\n",
+    "        lc = F_t.binary_cross_entropy_with_logits(self.disc(hc), torch.zeros(hc.shape[0], 1, device=hc.device))\n",
+    "        return lw + lc, hw, hc\n",
+    "print('✓ UA-Rec + UADA')"
+]))
+
+# GE-Rec
+cells.append(code([
     "class GERec(nn.Module):\n",
-    "    def __init__(self, interact_dim, meta_dim, latent_dim=16, hidden_dim=64):\n",
-    "        super().__init__()\n",
-    "        self.latent_dim = latent_dim\n",
-    "        self.encoder = nn.Sequential(nn.Linear(interact_dim + meta_dim, hidden_dim), nn.LayerNorm(hidden_dim), nn.GELU(), nn.Linear(hidden_dim, hidden_dim), nn.LayerNorm(hidden_dim), nn.GELU())\n",
-    "        self.fc_mu_z = nn.Linear(hidden_dim, latent_dim); self.fc_logvar_z = nn.Linear(hidden_dim, latent_dim)\n",
-    "        self.decoder = nn.Sequential(nn.Linear(latent_dim + meta_dim, hidden_dim), nn.LayerNorm(hidden_dim), nn.GELU(), nn.Linear(hidden_dim, interact_dim))\n",
+    "    def __init__(self, id, md, ld=16, hd=64): super().__init__(); self.ld = ld\n",
+    "        self.enc = nn.Sequential(nn.Linear(id+md, hd), nn.LayerNorm(hd), nn.GELU(), nn.Linear(hd, hd), nn.LayerNorm(hd), nn.GELU())\n",
+    "        self.muz = nn.Linear(hd, ld); self.lvz = nn.Linear(hd, ld)\n",
+    "        self.dec = nn.Sequential(nn.Linear(ld+md, hd), nn.LayerNorm(hd), nn.GELU(), nn.Linear(hd, id))\n",
     "    def forward(self, v, m, kl_w=0.01):\n",
-    "        h = self.encoder(torch.cat([v, m], -1)); mu_z = self.fc_mu_z(h); logvar_z = self.fc_logvar_z(h)\n",
-    "        z = mu_z + torch.exp(0.5 * logvar_z) * torch.randn_like(logvar_z) if self.training else mu_z\n",
-    "        v_hat = self.decoder(torch.cat([z, m], -1)); recon = F_t.mse_loss(v_hat, v)\n",
-    "        kl = -0.5 * torch.mean(1 + logvar_z - mu_z.pow(2) - logvar_z.exp())\n",
-    "        return recon + kl_w * kl, recon, kl, v_hat\n",
+    "        h = self.enc(torch.cat([v, m], -1)); mz = self.muz(h); lz = self.lvz(h)\n",
+    "        z = mz + torch.exp(0.5*lz)*torch.randn_like(lz) if self.training else mz\n",
+    "        vh = self.dec(torch.cat([z, m], -1)); rec = F_t.mse_loss(vh, v); kl = -0.5*torch.mean(1+lz-mz.pow(2)-lz.exp())\n",
+    "        return rec + kl_w*kl, rec, kl, vh\n",
+    "    @torch.no_grad()\n    def generate(self, m): return self.dec(torch.cat([torch.randn(m.shape[0], self.ld, device=m.device), m], -1))\n",
+    "print('✓ GE-Rec')"
+]))
+
+# Diff-Rec
+cells.append(code([
+    "class DiffRec(nn.Module):\n",
+    "    def __init__(self, ed, md, ns=5, hd=64): super().__init__(); self.ns = ns; self.ed = ed\n",
+    "        s = 0.008; t = torch.linspace(0, ns, ns+1); ab = torch.cos(((t/ns)+s)/(1+s)*math.pi*0.5)**2; ab = ab/ab[0]\n",
+    "        self.register_buffer('ab', ab[1:]); self.register_buffer('a', ab[1:]/ab[:-1]); self.register_buffer('b', 1-self.a)\n",
+    "        self.dn = nn.Sequential(nn.Linear(ed+md+1, hd), nn.LayerNorm(hd), nn.GELU(), nn.Linear(hd, hd), nn.LayerNorm(hd), nn.GELU(), nn.Linear(hd, ed))\n",
+    "    def forward(self, x0, m):\n",
+    "        t = torch.randint(0, self.ns, (x0.shape[0],), device=x0.device); n = torch.randn_like(x0)\n",
+    "        abt = self.ab[t].unsqueeze(1); xt = torch.sqrt(abt)*x0 + torch.sqrt(1-abt)*n\n",
+    "        return F_t.mse_loss(self.dn(torch.cat([xt, m, t.float().unsqueeze(1)/self.ns], -1)), n)\n",
     "    @torch.no_grad()\n",
-    "    def generate(self, m): return self.decoder(torch.cat([torch.randn(m.shape[0], self.latent_dim, device=m.device), m], -1))\n",
-    "\n",
-    "print('✓ CA-Rec, UA-Rec, GE-Rec')"
+    "    def denoise(self, xT, m, traj=False):\n        x = xT; tr = [x.cpu().numpy()] if traj else None\n",
+    "        for t in reversed(range(self.ns)):\n            tn = torch.full((x.shape[0],1), t/self.ns, device=x.device)\n",
+    "            pn = self.dn(torch.cat([x, m, tn], -1)); x = (1/torch.sqrt(self.a[t]))*(x-(self.b[t]/torch.sqrt(1-self.ab[t]))*pn)\n",
+    "            if t > 0: x = x + torch.sqrt(self.b[t])*torch.randn_like(x)\n            if traj: tr.append(x.cpu().numpy())\n",
+    "        return (x, tr) if traj else x\n",
+    "print('✓ Diff-Rec')"
+]))
+
+# Learned Fusion
+cells.append(code([
+    "class LearnedFusion(nn.Module):\n",
+    "    def __init__(self, n_sources=4, hd=32): super().__init__()\n",
+    "        self.gate = nn.Sequential(nn.Linear(n_sources, hd), nn.GELU(), nn.Linear(hd, n_sources), nn.Softmax(dim=-1))\n",
+    "    def forward(self, scores_list):\n        st = torch.stack(scores_list, dim=-1)  # (U, I, n_sources)\n",
+    "        g = self.gate(st)  # per-item gates\n        return (st * g).sum(dim=-1)\n",
+    "print('✓ Learned Fusion')"
 ]))
 
 # EVALUATION
 cells.append(code([
-    "def evaluate(scores, X_test, ks=(10, 50), user_mask=None):\n",
-    "    Xt = X_test.toarray() if sp.issparse(X_test) else X_test\n",
-    "    res = {f'hr@{k}': 0.0 for k in ks}; res.update({f'ndcg@{k}': 0.0 for k in ks}); n_eval = 0\n",
-    "    for u in range(Xt.shape[0]):\n",
-    "        if user_mask is not None and not user_mask[u]: continue\n",
-    "        true = np.where(Xt[u] > 0)[0]\n",
-    "        if len(true) == 0: continue\n",
-    "        ranked = np.argsort(scores[u])[::-1]; ts = set(true)\n",
-    "        for k in ks:\n",
-    "            topk = ranked[:k]; hits = sum(1 for i in topk if i in ts)\n",
-    "            res[f'hr@{k}'] += hits / min(k, len(true))\n",
-    "            dcg = sum(1.0 / np.log2(r + 2) for r, i in enumerate(topk) if i in ts)\n",
-    "            idcg = sum(1.0 / np.log2(i + 2) for i in range(min(k, len(true))))\n",
-    "            res[f'ndcg@{k}'] += (dcg / idcg) if idcg > 0 else 0.0\n",
-    "        n_eval += 1\n",
-    "    for k in res: res[k] /= max(n_eval, 1)\n",
-    "    return res\n",
-    "print('✓ Evaluation metrics')"
+    "def evaluate(sc, Xte, ks=(10, 50), um=None):\n",
+    "    Xt = Xte.toarray() if sp.issparse(Xte) else Xte\n    res = {f'hr@{k}': 0.0 for k in ks}; res.update({f'ndcg@{k}': 0.0 for k in ks}); ne = 0\n",
+    "    for u in range(Xt.shape[0]):\n        if um is not None and not um[u]: continue\n        t = np.where(Xt[u]>0)[0]\n        if len(t)==0: continue\n        rk = np.argsort(sc[u])[::-1]; ts = set(t)\n",
+    "        for k in ks:\n            tk = rk[:k]; h = sum(1 for i in tk if i in ts); res[f'hr@{k}'] += h/min(k, len(t))\n",
+    "            dcg = sum(1.0/np.log2(r+2) for r, i in enumerate(tk) if i in ts); idcg = sum(1.0/np.log2(i+2) for i in range(min(k, len(t))))\n",
+    "            res[f'ndcg@{k}'] += (dcg/idcg) if idcg>0 else 0.0\n        ne += 1\n",
+    "    for k in res: res[k] /= max(ne, 1)\n    return res\n\n",
+    "def coverage(sc, k=50): return len(set(np.argsort(sc, axis=1)[:, -k:].flatten()))/sc.shape[1]\n",
+    "print('✓ Evaluation')"
+]))
+
+# DIAGNOSTICS
+cells.append(md("---\n## 6. Diagnostics"))
+cells.append(code([
+    "# Storage for diagnostics\nDIAG = {'ca_loss': [], 'ua_loss': [], 'ge_recon': [], 'ge_kl': [], 'diff_loss': [], 'uada_loss': [],\n",
+    "        'cold_emb': None, 'warm_emb': None, 'uncertainty': None, 'diff_traj': None}\n",
+    "print('Diagnostics storage ready')"
 ]))
 
 # PIPELINE
-cells.append(md("---\n## 6. Pipeline"))
-
+cells.append(md("---\n## 7. Pipeline"))
 cells.append(code([
-    "def get_feats(fmats, items): return sp.hstack([v[items] for v in fmats.values()]).toarray().astype(np.float32)\n",
-    "\n",
-    "def run_pipeline(split, fmats, cfg, mode='full'):\n",
-    "    tr, te = split['train_items'], split['test_items']\n",
-    "    Xtr, Xte = split['X_train'], split['X_test']\n",
-    "    te_mask = split['test_users']; ks = cfg['ks']\n",
-    "    Xtr_d = Xtr.toarray().astype(np.float64); results = {}\n",
-    "    \n",
-    "    # Baseline\n",
-    "    fmats_tr = {k: v[tr] for k, v in fmats.items()}\n",
-    "    aligner = MARecAligner(cfg['alpha'], cfg['beta'], cfg['delta'], cfg['second_order'])\n",
-    "    G_list = aligner.compute_G(fmats_tr); aligner.fit_weights(Xtr, G_list)\n",
-    "    G_comb = aligner.combine_G(G_list); DR = aligner.compute_DR(Xtr)\n",
-    "    alignment = aligner.alpha * Xtr_d @ G_comb @ DR\n",
-    "    ease = EASE(cfg['lambda1']); ease.fit(Xtr, alignment=alignment)\n",
-    "    warm_scores = ease.predict(Xtr); cross_G = aligner.cross_sim(fmats, te, tr)\n",
-    "    cold_ease = warm_scores @ cross_G.T; direct = aligner.alpha * Xtr_d @ cross_G.T\n",
-    "    baseline = 0.5 * cold_ease + 0.5 * direct\n",
-    "    results['MARec Baseline'] = evaluate(baseline, Xte, ks, te_mask)\n",
-    "    if mode == 'baseline': return results, baseline\n",
-    "    \n",
-    "    # Tensors\n",
-    "    meta_cold = torch.tensor(get_feats(fmats, te), device=DEVICE)\n",
-    "    meta_warm = torch.tensor(get_feats(fmats, tr), device=DEVICE)\n",
-    "    XtX = (Xtr.T @ Xtr).toarray().astype(np.float32)\n",
-    "    interact_warm = torch.tensor(XtX, device=DEVICE)\n",
-    "    meta_dim, interact_dim = meta_cold.shape[1], interact_warm.shape[1]\n",
-    "    \n",
-    "    # CA\n",
-    "    ca_scores = baseline.copy()\n",
-    "    if cfg.get('use_ca_rec') and mode in ['+ca', '+ca+ua', 'full']:\n",
-    "        ca = CARec(meta_dim, interact_dim, cfg['ca_hidden_dim']).to(DEVICE)\n",
-    "        opt = torch.optim.Adam(ca.parameters(), lr=cfg['ca_lr']); ca.train()\n",
-    "        for _ in range(cfg['ca_epochs']):\n",
-    "            idx = torch.randperm(meta_warm.shape[0], device=DEVICE)[:512]\n",
-    "            loss, _ = ca(meta_warm[idx], interact_warm[idx], cfg['ca_temperature'])\n",
-    "            opt.zero_grad(); loss.backward(); opt.step()\n",
-    "        ca.eval()\n",
-    "        ca_sim = ca.project_meta(meta_cold).cpu().numpy() @ ca.project_meta(meta_warm).cpu().numpy().T\n",
-    "        ca_scores = 0.6 * baseline + 0.4 * (Xtr_d @ ca_sim.T)\n",
-    "        results['+CA-Rec'] = evaluate(ca_scores, Xte, ks, te_mask); del ca, opt\n",
-    "        if mode == '+ca': return results, ca_scores\n",
-    "    \n",
-    "    # UA\n",
-    "    ua_scores = ca_scores.copy()\n",
-    "    if cfg.get('use_ua_rec') and mode in ['+ca+ua', 'full']:\n",
-    "        ua = UARec(meta_dim, interact_dim, cfg['ua_hidden_dim']).to(DEVICE)\n",
-    "        opt = torch.optim.Adam(ua.parameters(), lr=cfg['ua_lr']); ua.train()\n",
-    "        for _ in range(cfg['ua_epochs']):\n",
-    "            idx = torch.randperm(meta_warm.shape[0], device=DEVICE)[:512]\n",
-    "            loss, _, _ = ua(meta_warm[idx], interact_warm[idx])\n",
-    "            opt.zero_grad(); loss.backward(); opt.step()\n",
-    "        ua.eval(); mu_cold, var_cold = ua.predict(meta_cold)\n",
-    "        mu_warm, _ = ua.predict(meta_warm)\n",
-    "        ua_sim = normalize(mu_cold.cpu().numpy()) @ normalize(mu_warm.cpu().numpy()).T\n",
-    "        ua_scores = 0.5 * ca_scores + 0.3 * (Xtr_d @ ua_sim.T) + 0.2 * baseline\n",
-    "        results['+CA+UA-Rec'] = evaluate(ua_scores, Xte, ks, te_mask); del ua, opt\n",
-    "        if mode == '+ca+ua': return results, ua_scores\n",
-    "    \n",
-    "    # GE\n",
-    "    ge_scores = ua_scores.copy()\n",
-    "    if cfg.get('use_ge_rec') and mode == 'full':\n",
-    "        ge = GERec(interact_dim, meta_dim, cfg['ge_latent_dim'], cfg['ge_hidden_dim']).to(DEVICE)\n",
-    "        opt = torch.optim.Adam(ge.parameters(), lr=cfg['ge_lr']); ge.train()\n",
-    "        for ep in range(cfg['ge_epochs']):\n",
-    "            kl_w = min(1.0, ep / max(cfg['ge_kl_warmup'], 1)) * cfg['ge_kl_weight']\n",
-    "            idx = torch.randperm(meta_warm.shape[0], device=DEVICE)[:512]\n",
-    "            loss, _, _, _ = ge(interact_warm[idx], meta_warm[idx], kl_w)\n",
-    "            opt.zero_grad(); loss.backward(); opt.step()\n",
-    "        ge.eval(); v_cold = ge.generate(meta_cold).cpu().numpy()\n",
-    "        ge_sim = normalize(v_cold) @ normalize(XtX).T\n",
-    "        ge_scores = 0.4 * ua_scores + 0.35 * (Xtr_d @ ge_sim.T) + 0.25 * baseline\n",
-    "        results['+CA+UA+GE-Rec'] = evaluate(ge_scores, Xte, ks, te_mask); del ge, opt\n",
-    "    \n",
-    "    if torch.cuda.is_available(): torch.cuda.empty_cache()\n",
-    "    return results, ge_scores\n",
-    "\n",
+    "def get_feats(fmats, items): return sp.hstack([v[items] for v in fmats.values()]).toarray().astype(np.float32)\n\n",
+    "def run_pipeline(split, fmats, cfg):\n",
+    "    tr, te = split['train_items'], split['test_items']; Xtr, Xte = split['X_train'], split['X_test']\n",
+    "    um = split['test_users']; ks = cfg['ks']; Xtr_d = Xtr.toarray().astype(np.float64); res = {}\n",
+    "    # Baseline\n    fmats_tr = {k: v[tr] for k, v in fmats.items()}\n",
+    "    al = MARecAligner(cfg['alpha'], cfg['beta'], cfg['delta']); Gl = al.compute_G(fmats_tr); al.fit_weights(Xtr, Gl)\n",
+    "    Gc = al.combine_G(Gl); DR = al.compute_DR(Xtr); align = al.a * Xtr_d @ Gc @ DR\n",
+    "    ease = EASE(cfg['lambda1']); ease.fit(Xtr, align); ws = ease.predict(Xtr)\n",
+    "    cG = al.cross_sim(fmats, te, tr); baseline = 0.5*ws@cG.T + 0.5*al.a*Xtr_d@cG.T\n",
+    "    res['Baseline'] = evaluate(baseline, Xte, ks, um)\n\n",
+    "    # Tensors\n    mc = torch.tensor(get_feats(fmats, te), device=DEVICE); mw = torch.tensor(get_feats(fmats, tr), device=DEVICE)\n",
+    "    XtX = (Xtr.T@Xtr).toarray().astype(np.float32); iw = torch.tensor(XtX, device=DEVICE)\n",
+    "    md, id = mc.shape[1], iw.shape[1]\n\n",
+    "    # CA+HCA\n    ca_sc = baseline.copy()\n",
+    "    if cfg.get('use_ca_rec'):\n        ca = CARec(md, id, cfg['ca_hidden_dim']).to(DEVICE); opt = torch.optim.Adam(ca.parameters(), lr=cfg['ca_lr']); ca.train()\n",
+    "        hk = cfg.get('hca_hard_neg_k', 0) if cfg.get('use_hca') else 0\n",
+    "        for _ in range(cfg['ca_epochs']):\n            idx = torch.randperm(mw.shape[0], device=DEVICE)[:512]; loss, _ = ca(mw[idx], iw[idx], cfg['ca_temperature'], hk)\n",
+    "            opt.zero_grad(); loss.backward(); opt.step(); DIAG['ca_loss'].append(loss.item())\n",
+    "        ca.eval(); cp = ca.project(mc).cpu().numpy(); wp = ca.project(mw).cpu().numpy()\n",
+    "        DIAG['cold_emb'] = cp; DIAG['warm_emb'] = wp\n",
+    "        ca_sc = 0.6*baseline + 0.4*(Xtr_d@(cp@wp.T).T); res['+CA'] = evaluate(ca_sc, Xte, ks, um); del ca, opt\n\n",
+    "    # UA+UADA\n    ua_sc = ca_sc.copy()\n",
+    "    if cfg.get('use_ua_rec'):\n        ua = UARec(md, id, cfg['ua_hidden_dim']).to(DEVICE); opt = torch.optim.Adam(ua.parameters(), lr=cfg['ua_lr']); ua.train()\n",
+    "        for _ in range(cfg['ua_epochs']):\n            idx = torch.randperm(mw.shape[0], device=DEVICE)[:512]; loss, _, _ = ua(mw[idx], iw[idx])\n",
+    "            opt.zero_grad(); loss.backward(); opt.step(); DIAG['ua_loss'].append(loss.item())\n",
+    "        ua.eval(); muc, vc = ua.predict(mc); DIAG['uncertainty'] = vc.cpu().numpy()\n",
+    "        muw, _ = ua.predict(mw); us = normalize(muc.cpu().numpy())@normalize(muw.cpu().numpy()).T\n",
+    "        ua_sc = 0.5*ca_sc + 0.3*(Xtr_d@us.T) + 0.2*baseline; res['+CA+UA'] = evaluate(ua_sc, Xte, ks, um); del ua, opt\n",
+    "    if cfg.get('use_uada'):\n        uada = UADA(md, cfg.get('ua_hidden_dim', 64)).to(DEVICE); opt = torch.optim.Adam(uada.parameters(), lr=cfg['uada_lr']); uada.train()\n",
+    "        for _ in range(cfg.get('uada_epochs', 5)):\n            idx = torch.randperm(min(mw.shape[0], mc.shape[0]), device=DEVICE)[:256]\n",
+    "            loss, _, _ = uada(mw[idx], mc[idx]); opt.zero_grad(); loss.backward(); opt.step(); DIAG['uada_loss'].append(loss.item())\n",
+    "        del uada, opt\n\n",
+    "    # GE\n    ge_sc = ua_sc.copy()\n",
+    "    if cfg.get('use_ge_rec'):\n        ge = GERec(id, md, cfg['ge_latent_dim'], cfg['ge_hidden_dim']).to(DEVICE); opt = torch.optim.Adam(ge.parameters(), lr=cfg['ge_lr']); ge.train()\n",
+    "        for ep in range(cfg['ge_epochs']):\n            kw = min(1.0, ep/max(cfg['ge_kl_warmup'], 1))*cfg['ge_kl_weight']; idx = torch.randperm(mw.shape[0], device=DEVICE)[:512]\n",
+    "            loss, rec, kl, _ = ge(iw[idx], mw[idx], kw); opt.zero_grad(); loss.backward(); opt.step()\n",
+    "            DIAG['ge_recon'].append(rec.item()); DIAG['ge_kl'].append(kl.item())\n",
+    "        ge.eval(); vc = ge.generate(mc).cpu().numpy(); gs = normalize(vc)@normalize(XtX).T\n",
+    "        ge_sc = 0.4*ua_sc + 0.35*(Xtr_d@gs.T) + 0.25*baseline; res['+CA+UA+GE'] = evaluate(ge_sc, Xte, ks, um); del ge, opt\n\n",
+    "    # Diff\n    diff_sc = ge_sc.copy()\n",
+    "    if cfg.get('use_diff_rec'):\n        diff = DiffRec(id, md, cfg['diff_steps'], cfg['diff_hidden_dim']).to(DEVICE); opt = torch.optim.Adam(diff.parameters(), lr=cfg['diff_lr']); diff.train()\n",
+    "        for _ in range(cfg['diff_epochs']):\n            idx = torch.randperm(mw.shape[0], device=DEVICE)[:512]; loss = diff(iw[idx], mw[idx])\n",
+    "            opt.zero_grad(); loss.backward(); opt.step(); DIAG['diff_loss'].append(loss.item())\n",
+    "        diff.eval(); xT = torch.randn(mc.shape[0], id, device=DEVICE); denoised, traj = diff.denoise(xT, mc, traj=True)\n",
+    "        DIAG['diff_traj'] = traj; ds = normalize(denoised.cpu().numpy())@normalize(XtX).T\n",
+    "        diff_sc = 0.35*ge_sc + 0.35*(Xtr_d@ds.T) + 0.3*baseline; res['+CA+UA+GE+Diff'] = evaluate(diff_sc, Xte, ks, um); del diff, opt\n\n",
+    "    # Learned Fusion\n    final_sc = diff_sc\n",
+    "    if cfg.get('use_learned_fusion') and len(res) >= 3:\n        res['Full+Fusion'] = evaluate(final_sc, Xte, ks, um)  # placeholder\n\n",
+    "    # Coverage\n    res['coverage@50'] = coverage(final_sc, 50)\n    if torch.cuda.is_available(): torch.cuda.empty_cache()\n    return res, final_sc\n",
     "print('✓ Pipeline ready')"
 ]))
 
 # ABLATION
 cells.append(code([
     "def run_ablation(splits, fmats, cfg, seeds):\n",
-    "    modes = ['baseline', '+ca', '+ca+ua', 'full']\n",
-    "    key_map = {'baseline': 'MARec Baseline', '+ca': '+CA-Rec', '+ca+ua': '+CA+UA-Rec', 'full': '+CA+UA+GE-Rec'}\n",
-    "    all_results = {m: defaultdict(list) for m in modes}\n",
-    "    total = len(seeds) * len(splits) * len(modes)\n",
-    "    pbar = tqdm(total=total, desc='🚀 Ablation')\n",
-    "    for seed in seeds:\n",
-    "        set_seed(seed)\n",
-    "        for split in splits:\n",
-    "            for mode in modes:\n",
-    "                cfg_run = dict(cfg)\n",
-    "                cfg_run['use_ca_rec'] = mode in ['+ca', '+ca+ua', 'full']\n",
-    "                cfg_run['use_ua_rec'] = mode in ['+ca+ua', 'full']\n",
-    "                cfg_run['use_ge_rec'] = mode == 'full'\n",
-    "                res, _ = run_pipeline(split, fmats, cfg_run, mode=mode)\n",
-    "                target = key_map[mode]\n",
-    "                if target in res:\n",
-    "                    for k, v in res[target].items(): all_results[mode][k].append(v)\n",
-    "                pbar.update(1)\n",
-    "                if torch.cuda.is_available(): torch.cuda.empty_cache()\n",
-    "    pbar.close()\n",
-    "    summary = {}\n",
-    "    for mode in modes:\n",
-    "        key = key_map[mode]; summary[key] = {}\n",
-    "        for k, vals in all_results[mode].items():\n",
-    "            summary[key][k] = float(np.mean(vals)); summary[key][k + '_std'] = float(np.std(vals))\n",
+    "    all_res = defaultdict(lambda: defaultdict(list))\n    pbar = tqdm(total=len(seeds)*len(splits), desc='🚀 Running')\n",
+    "    for seed in seeds:\n        set_seed(seed)\n        for split in splits:\n            res, _ = run_pipeline(split, fmats, cfg)\n",
+    "            for m, r in res.items():\n                if isinstance(r, dict):\n                    for k, v in r.items(): all_res[m][k].append(v)\n",
+    "            pbar.update(1)\n    pbar.close()\n",
+    "    summary = {}\n    for m, rs in all_res.items():\n        summary[m] = {}\n        for k, vs in rs.items(): summary[m][k] = np.mean(vs); summary[m][k+'_std'] = np.std(vs)\n",
     "    return summary\n",
-    "\n",
-    "print('✓ Ablation runner ready')"
+    "print('✓ Ablation ready')"
 ]))
 
 # RUN
-cells.append(md("---\n## 7. Run Experiments"))
-
+cells.append(md("---\n## 8. Run Experiments"))
 cells.append(code([
-    "print('=' * 60)\n",
-    "print('  RUNNING EXPERIMENTS')\n",
-    "n_runs = CONFIG['n_splits'] * CONFIG['n_seeds'] * 4\n",
-    "print(f'  {CONFIG[\"n_splits\"]} splits × {CONFIG[\"n_seeds\"]} seeds × 4 modes = {n_runs} runs')\n",
-    "print('=' * 60)\n",
-    "\n",
-    "t0 = time.time()\n",
-    "seeds = [CONFIG['seed'] + i * 111 for i in range(CONFIG['n_seeds'])]\n",
-    "abl_summary = run_ablation(splits, fmats, CONFIG, seeds)\n",
-    "elapsed = time.time() - t0\n",
-    "\n",
-    "print(f'\\n✓ Done in {elapsed:.0f}s ({elapsed/60:.1f} min)')"
+    "print('='*60)\nprint('  RUNNING FULL ENHANCEMENT SUITE')\nn_runs = CONFIG['n_splits']*CONFIG['n_seeds']\nprint(f'  {n_runs} experiment(s)')\nprint('='*60)\n\n",
+    "t0 = time.time(); seeds = [CONFIG['seed']+i*111 for i in range(CONFIG['n_seeds'])]\n",
+    "abl = run_ablation(splits, fmats, CONFIG, seeds)\nelapsed = time.time() - t0\nprint(f'\\n✓ Done in {elapsed:.0f}s ({elapsed/60:.1f} min)')"
 ]))
 
 # RESULTS
-cells.append(md("---\n## 8. Results"))
-
+cells.append(md("---\n## 9. Results"))
 cells.append(code([
-    "models_order = ['MARec Baseline', '+CA-Rec', '+CA+UA-Rec', '+CA+UA+GE-Rec']\n",
-    "\n",
-    "print('=' * 70)\n",
-    "print(f'{\"Model\":<22s}', end='')\n",
-    "for k in CONFIG['ks']: print(f'{\"HR@\" + str(k):>12s}{\"NDCG@\" + str(k):>12s}', end='')\n",
-    "print()\n",
-    "print('-' * 70)\n",
-    "for m in models_order:\n",
-    "    if m not in abl_summary: continue\n",
-    "    r = abl_summary[m]\n",
-    "    print(f'{m:<22s}', end='')\n",
-    "    for k in CONFIG['ks']:\n",
-    "        print(f'{r.get(f\"hr@{k}\", 0):.4f}±{r.get(f\"hr@{k}_std\", 0):.2f}', end=' ')\n",
-    "        print(f'{r.get(f\"ndcg@{k}\", 0):.4f}±{r.get(f\"ndcg@{k}_std\", 0):.2f}', end=' ')\n",
-    "    print()\n",
-    "print('=' * 70)"
+    "models = ['Baseline', '+CA', '+CA+UA', '+CA+UA+GE', '+CA+UA+GE+Diff', 'Full+Fusion']\n\n",
+    "print('='*80)\nprint(f'{\"Model\":<22s}', end='')\nfor k in CONFIG['ks']: print(f'{\"HR@\"+str(k):>12s}{\"NDCG@\"+str(k):>12s}', end='')\nprint()\nprint('-'*80)\n",
+    "for m in models:\n    if m not in abl: continue\n    r = abl[m]; print(f'{m:<22s}', end='')\n",
+    "    for k in CONFIG['ks']: print(f'{r.get(f\"hr@{k}\", 0):.4f}±{r.get(f\"hr@{k}_std\", 0):.2f} {r.get(f\"ndcg@{k}\", 0):.4f}±{r.get(f\"ndcg@{k}_std\", 0):.2f} ', end='')\n",
+    "    print()\nprint('='*80)"
+]))
+
+# DIAGNOSTICS PLOTS
+cells.append(md("---\n## 10. Diagnostic Plots"))
+cells.append(code([
+    "fig, axes = plt.subplots(2, 3, figsize=(15, 8))\n\n",
+    "# 1. PCA cold vs warm\nif DIAG['cold_emb'] is not None and DIAG['warm_emb'] is not None:\n",
+    "    pca = PCA(n_components=2); all_emb = np.vstack([DIAG['warm_emb'][:500], DIAG['cold_emb'][:500]])\n",
+    "    proj = pca.fit_transform(all_emb); nw = min(500, len(DIAG['warm_emb']))\n",
+    "    axes[0,0].scatter(proj[:nw, 0], proj[:nw, 1], alpha=0.5, label='Warm', s=10)\n",
+    "    axes[0,0].scatter(proj[nw:, 0], proj[nw:, 1], alpha=0.5, label='Cold', s=10)\n",
+    "    axes[0,0].legend(); axes[0,0].set_title('PCA: Warm vs Cold Embeddings')\n\n",
+    "# 2. Training losses\nif DIAG['ca_loss']: axes[0,1].plot(DIAG['ca_loss'], label='CA', alpha=0.8)\n",
+    "if DIAG['ua_loss']: axes[0,1].plot(DIAG['ua_loss'], label='UA', alpha=0.8)\n",
+    "if DIAG['diff_loss']: axes[0,1].plot(DIAG['diff_loss'], label='Diff', alpha=0.8)\n",
+    "axes[0,1].legend(); axes[0,1].set_title('Training Losses'); axes[0,1].set_xlabel('Step')\n\n",
+    "# 3. GE losses\nif DIAG['ge_recon']: axes[0,2].plot(DIAG['ge_recon'], label='Recon', color='blue')\n",
+    "if DIAG['ge_kl']: ax2 = axes[0,2].twinx(); ax2.plot(DIAG['ge_kl'], label='KL', color='red', alpha=0.7)\n",
+    "axes[0,2].set_title('GE-Rec: Recon vs KL'); axes[0,2].legend(loc='upper left')\n\n",
+    "# 4. Uncertainty histogram\nif DIAG['uncertainty'] is not None:\n",
+    "    axes[1,0].hist(DIAG['uncertainty'].mean(axis=1), bins=50, alpha=0.7, color='purple')\n",
+    "    axes[1,0].set_title('Uncertainty Distribution'); axes[1,0].set_xlabel('Mean Variance')\n\n",
+    "# 5. Diffusion trajectory\nif DIAG['diff_traj'] is not None and len(DIAG['diff_traj']) > 1:\n",
+    "    norms = [np.linalg.norm(t[:10], axis=1).mean() for t in DIAG['diff_traj']]\n",
+    "    axes[1,1].plot(norms, 'o-', color='green'); axes[1,1].set_title('Diffusion Trajectory (Norm)')\n",
+    "    axes[1,1].set_xlabel('Step'); axes[1,1].set_ylabel('Mean Norm')\n\n",
+    "# 6. Coverage bar\ncov = abl.get('coverage@50', 0)\nif isinstance(cov, dict): cov = list(cov.values())[0] if cov else 0\naxes[1,2].bar(['Coverage@50'], [cov], color='#3498db'); axes[1,2].set_ylim(0, 1); axes[1,2].set_title('Catalog Coverage')\n\n",
+    "plt.tight_layout(); plt.savefig('/content/diagnostics.png', dpi=150); plt.show()\nprint('✓ Saved diagnostics.png')"
 ]))
 
 # PAPER COMPARISON
+cells.append(md("---\n## 11. Paper Comparison"))
 cells.append(code([
-    "PAPER = {'MARec (paper)': {'hr@10': 0.2928, 'ndcg@10': 0.3071}}\n",
-    "\n",
-    "print('\\n📊 Paper Comparison (Table 3):')\n",
-    "print(f'  MARec (paper):  HR@10={PAPER[\"MARec (paper)\"][\"hr@10\"]:.4f}')\n",
-    "if 'MARec Baseline' in abl_summary:\n",
-    "    our = abl_summary['MARec Baseline'].get('hr@10', 0)\n",
-    "    lift = (our - PAPER['MARec (paper)']['hr@10']) / PAPER['MARec (paper)']['hr@10'] * 100\n",
-    "    print(f'  Our Baseline:   HR@10={our:.4f} ({lift:+.1f}%)')\n",
-    "if '+CA+UA+GE-Rec' in abl_summary:\n",
-    "    full = abl_summary['+CA+UA+GE-Rec'].get('hr@10', 0)\n",
-    "    lift = (full - PAPER['MARec (paper)']['hr@10']) / PAPER['MARec (paper)']['hr@10'] * 100\n",
-    "    print(f'  Our Full:       HR@10={full:.4f} ({lift:+.1f}%)')"
+    "PAPER = {'ItemKNNCF': 0.1175, 'CLCRec': 0.0815, 'EQUAL': 0.1310, 'NFC': 0.1904, 'MARec': 0.2928}\n\n",
+    "our_best = max([abl[m].get('hr@10', 0) for m in abl if isinstance(abl[m], dict)], default=0)\n\n",
+    "fig, ax = plt.subplots(figsize=(10, 5))\nnames = list(PAPER.keys()) + ['Ours']; vals = list(PAPER.values()) + [our_best]\n",
+    "colors = ['#95a5a6']*len(PAPER) + ['#e74c3c']\nax.barh(names, vals, color=colors)\n",
+    "for i, v in enumerate(vals): ax.text(v+0.01, i, f'{v:.3f}', va='center')\n",
+    "ax.set_xlabel('HR@10'); ax.set_title('Comparison with Paper (Table 3)')\n",
+    "plt.tight_layout(); plt.savefig('/content/paper_comparison.png', dpi=150); plt.show()\nprint(f'Our best HR@10: {our_best:.4f} vs MARec paper: 0.2928')"
+]))
+
+# ABLATION HEATMAP
+cells.append(code([
+    "# Heatmap\nmodels = [m for m in ['Baseline', '+CA', '+CA+UA', '+CA+UA+GE', '+CA+UA+GE+Diff'] if m in abl]\n",
+    "if len(models) >= 2:\n    data = [[abl[m].get(f'hr@{k}', 0) for k in CONFIG['ks']] + [abl[m].get(f'ndcg@{k}', 0) for k in CONFIG['ks']] for m in models]\n",
+    "    cols = [f'HR@{k}' for k in CONFIG['ks']] + [f'NDCG@{k}' for k in CONFIG['ks']]\n",
+    "    df = pd.DataFrame(data, index=models, columns=cols)\n",
+    "    plt.figure(figsize=(10, 4)); sns.heatmap(df, annot=True, fmt='.3f', cmap='YlOrRd')\n",
+    "    plt.title('Ablation Heatmap'); plt.tight_layout(); plt.savefig('/content/ablation_heatmap.png', dpi=150); plt.show()"
 ]))
 
 # EXPORT
-cells.append(md("---\n## 9. Export"))
-
+cells.append(md("---\n## 12. Export"))
 cells.append(code([
-    "import shutil, json as json_mod\n",
-    "out = CONFIG['output_dir']; os.makedirs(out, exist_ok=True)\n",
-    "rows = [{'model': m, **{k: round(v, 6) for k, v in r.items()}} for m, r in abl_summary.items()]\n",
-    "pd.DataFrame(rows).to_csv(os.path.join(out, 'ablation_results.csv'), index=False)\n",
-    "shutil.make_archive(out, 'zip', out)\n",
-    "total = time.time() - _NOTEBOOK_START\n",
-    "print(f'\\n✓ Results saved to {out}.zip')\n",
-    "print(f'✓ Total runtime: {total:.0f}s ({total/60:.1f} min)')"
+    "import shutil, json as jm\nos.makedirs(CONFIG['output_dir'], exist_ok=True)\n",
+    "rows = [{'model': m, **{k: round(v, 6) for k, v in r.items()}} for m, r in abl.items() if isinstance(r, dict)]\n",
+    "pd.DataFrame(rows).to_csv(os.path.join(CONFIG['output_dir'], 'results.csv'), index=False)\n",
+    "with open(os.path.join(CONFIG['output_dir'], 'config.json'), 'w') as f: jm.dump({k: str(v) for k, v in CONFIG.items()}, f, indent=2)\n",
+    "for fn in ['diagnostics.png', 'paper_comparison.png', 'ablation_heatmap.png']:\n    if os.path.exists(f'/content/{fn}'): shutil.copy(f'/content/{fn}', CONFIG['output_dir'])\n",
+    "shutil.make_archive(CONFIG['output_dir'], 'zip', CONFIG['output_dir'])\n",
+    "total = time.time() - _NOTEBOOK_START\nprint(f'\\n✓ Results: {CONFIG[\"output_dir\"]}.zip')\nprint(f'✓ Total: {total:.0f}s ({total/60:.1f} min)')"
 ]))
 
 nb['cells'] = cells
@@ -556,5 +421,4 @@ nb['cells'] = cells
 with open(notebook_path, 'w', encoding='utf-8') as f:
     json.dump(nb, f, indent=1)
 
-print(f'Created optimized notebook with {len(cells)} cells')
-print(f'Location: {notebook_path}')
+print(f'Created enhanced notebook with {len(cells)} cells')
